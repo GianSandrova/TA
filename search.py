@@ -3,6 +3,7 @@
 import json
 import traceback
 import requests
+import re
 import os
 from config import driver, INDEX_NAME, GROQ_API_KEY, GROQ_MODEL
 from groq_embedder import Embedder
@@ -74,12 +75,51 @@ def call_groq_api(prompt, api_key, model):
         print(f"❌ Groq API error: {str(e)}")
         return "⚠️ Gagal mendapatkan respons dari AI."
 
+
+def extract_surah_ayah_from_query(query_text):
+    """
+    Ekstrak nama surah dan nomor ayat dari query pengguna.
+    Contoh yang dikenali: 'surat al-lahab ayat 2'
+    """
+    match = re.search(r'surat\s+([a-zA-Z\-]+)\s+ayat\s+(\d+)', query_text.lower())
+    if match:
+        surah = match.group(1).replace('-', ' ').title()
+        ayat = int(match.group(2))
+        return surah, ayat
+    return None, None
+
 def process_query(query_text):
     print(f"\n💬 Query: '{query_text}'")
     records = vector_search_chunks(query_text, top_k=20, min_score=0.6)
 
     if not records:
         return "❌ Maaf, saya tidak menemukan potongan yang relevan untuk menjawab pertanyaan ini."
+
+    # Deteksi permintaan user (tafsir / terjemahan / teks asli)
+    preferred_source = None
+    lowered = query_text.lower()
+    if "tafsir" in lowered:
+        preferred_source = "tafsir"
+    elif "terjemahan" in lowered or "arti" in lowered:
+        preferred_source = "translation"
+    elif "teks" in lowered or "bacaan" in lowered or "arab" in lowered:
+        preferred_source = "text"
+
+    # Deteksi spesifik ayat
+    surah, ayat = extract_surah_ayah_from_query(query_text)
+    if surah and ayat:
+        records = [r for r in records if r["surah"].lower() == surah.lower() and r["ayat_number"] == ayat]
+        print(f"🔍 Filter: Hanya ambil chunk dari Surah '{surah}' Ayat {ayat}.")
+
+    # Jika user menyebut sumber tertentu (tafsir, translation, text), prioritaskan
+    if preferred_source:
+        preferred = [r for r in records if r["source"] == preferred_source]
+        if preferred:
+            print(f"🎯 Mengutamakan sumber: {preferred_source}")
+            records = preferred
+
+    if not records:
+        return "❌ Maaf, tidak ada potongan relevan dari sumber yang diminta."
 
     context = build_chunk_context(records)
     prompt = f"""
@@ -93,8 +133,8 @@ Berikan penjelasan tafsir berdasarkan potongan konten berikut:
 
 Jika potongan konten tidak relevan dengan pertanyaan, mohon jawab bahwa Anda tidak dapat menjawab.
 """
-
     return call_groq_api(prompt, GROQ_API_KEY, GROQ_MODEL)
+
 
 
 def main():
