@@ -3,7 +3,7 @@ import requests
 from neo4j_graphrag.embeddings.base import Embedder as BaseEmbedder
 
 class OllamaEmbedder(BaseEmbedder):
-    def __init__(self, model_name="gte-qwen2-embed", host="http://localhost:11434/api/embeddings"):
+    def __init__(self, model_name="gte-qwen2-7b-instruct", host="http://localhost:11434"):
         self.model = model_name
         self.host = host
         self.max_tokens = 8192
