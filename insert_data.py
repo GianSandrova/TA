@@ -103,8 +103,7 @@ def insert_quran_chunks():
                         if content.strip():
                             chunks = chunk_text(content)
                             for chunk in chunks:
-                                # Tambahkan konteks surah dan ayat ke isi chunk
-                                prefixed_chunk = f"[{surah_name_latin}:{ayah_num}] {chunk}"
+                                prefixed_chunk = f"[{source} {surah_name_latin}:{ayah_num}] {chunk}"
                                 embedding = embed_chunk(prefixed_chunk)
                                 session.run(
                                     """
@@ -130,6 +129,7 @@ def insert_quran_chunks():
                                         "surah_number": surah_id
                                     }
                                 )
+
 
                     progress.update(1)
 
