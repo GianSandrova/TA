@@ -1,21 +1,29 @@
+# embedder.py
+import requests
 from neo4j_graphrag.embeddings.base import Embedder as BaseEmbedder
-from llama_cpp import Llama
 
-class LlamaEmbedder(BaseEmbedder):
-    def __init__(self, model_path="/home/kota410/chatbot-deploy/TA/gte-qwen-gguf/gte-Qwen2-7B-instruct-Q8_0.gguf"):
-        self.model = Llama(
-            model_path=model_path,
-            embedding=True,  # Enable embedding mode
-            n_ctx=8192      # Context size
-        )
+class OllamaEmbedder(BaseEmbedder):
+    def __init__(self, model_name="gte-qwen2-embed", host="http://localhost:11434"):
+        self.model = model_name
+        self.host = host
         self.max_tokens = 8192
         self.chunk_overlap = 128
 
+    def _embed(self, text: str):
+        response = requests.post(
+            f"{self.host}/api/embeddings",
+            json={
+                "model": self.model,
+                "prompt": text
+            }
+        )
+        response.raise_for_status()
+        return response.json()["embedding"]
+
     def embed_text(self, text: str):
-        embedding = self.model.embed(text)
-        return embedding.tolist()  # Convert to list for compatibility
+        return self._embed(text)
 
     def embed_query(self, query: str):
-        return self.embed_text(query)
+        return self._embed(query)
 
-Embedder = LlamaEmbedder()
+Embedder = OllamaEmbedder()
