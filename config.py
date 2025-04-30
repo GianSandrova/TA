@@ -6,7 +6,7 @@ AUTH = ("neo4j", "12345678")
 
 # Konfigurasi index embedding
 INDEX_NAME = "ayat_embeddings"  # Nama indeks di Neo4j
-DIMENSION = 1024  # Disesuaikan dengan model embedding yang digunakan
+DIMENSION = 3584  # Disesuaikan dengan model embedding yang digunakan
 LABEL = "Tafsir"  # Label node di Neo4j
 EMBEDDING_PROPERTY = "embedding"  # Properti yang menyimpan embedding
 
