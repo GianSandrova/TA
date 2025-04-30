@@ -90,9 +90,9 @@ def extract_surah_ayah_from_query(query_text):
 
 def process_query(query_text):
     print(f"\n💬 Query: '{query_text}'")
-    records = vector_search_chunks(query_text, top_k=50, min_score=0.6)
+    all_records = vector_search_chunks(query_text, top_k=50, min_score=0.6)
 
-    if not records:
+    if not all_records:
         return "❌ Maaf, saya tidak menemukan potongan yang relevan untuk menjawab pertanyaan ini."
 
     # Deteksi jenis sumber
@@ -108,32 +108,54 @@ def process_query(query_text):
     # Deteksi permintaan surah + ayat
     surah, ayat = extract_surah_ayah_from_query(query_text)
 
-    # 🧠 Hard Filter Kombinasi Tertarget
+    # 🎯 HARD FILTER: Cari chunk spesifik [surah, ayat, source]
     if surah and ayat and preferred_source:
         hard_filtered = [
-            r for r in records
+            r for r in all_records
             if r["surah"].lower() == surah.lower()
             and r["ayat_number"] == ayat
             and r["source"] == preferred_source
         ]
         if hard_filtered:
-            print(f"🎯 Ambil langsung: {preferred_source} dari {surah} ayat {ayat}")
+            print(f"🎯 Langsung ambil [{preferred_source}] dari Surah '{surah}' Ayat {ayat}")
             records = hard_filtered
         else:
-            print("⚠️ Tafsir spesifik tidak ditemukan, fallback ke hasil umum.")
-
-    elif surah and ayat:
-        records = [r for r in records if r["surah"].lower() == surah.lower() and r["ayat_number"] == ayat]
-        print(f"🔍 Filter: Surah '{surah}', Ayat {ayat}")
-
-    elif preferred_source:
-        preferred = [r for r in records if r["source"] == preferred_source]
-        if preferred:
-            print(f"🎯 Mengutamakan sumber: {preferred_source}")
-            records = preferred
+            print("⚠️ Tidak ditemukan tafsir spesifik. Coba cari translation sebagai fallback.")
+            # Coba fallback ke source translation dari ayat yang sama
+            fallback = [
+                r for r in all_records
+                if r["surah"].lower() == surah.lower()
+                and r["ayat_number"] == ayat
+                and r["source"] == "translation"
+            ]
+            if fallback:
+                print("🔁 Fallback: translation ditemukan.")
+                records = fallback
+            else:
+                print("🔁 Tidak ada chunk dari ayat tersebut. Gunakan vector search penuh.")
+                records = all_records
+    else:
+        # Jika hanya surah + ayat saja
+        if surah and ayat:
+            records = [
+                r for r in all_records
+                if r["surah"].lower() == surah.lower()
+                and r["ayat_number"] == ayat
+            ]
+            print(f"🔍 Filter: Surah '{surah}' Ayat {ayat}")
+        # Jika hanya sebut source
+        elif preferred_source:
+            preferred = [r for r in all_records if r["source"] == preferred_source]
+            if preferred:
+                print(f"🎯 Prioritaskan source: {preferred_source}")
+                records = preferred
+            else:
+                records = all_records
+        else:
+            records = all_records
 
     if not records:
-        return "❌ Maaf, tidak ada potongan relevan dari sumber atau ayat yang diminta."
+        return "❌ Tidak ada chunk yang relevan dari sumber atau ayat yang diminta."
 
     context = build_chunk_context(records)
     prompt = f"""
