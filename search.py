@@ -90,12 +90,12 @@ def extract_surah_ayah_from_query(query_text):
 
 def process_query(query_text):
     print(f"\n💬 Query: '{query_text}'")
-    records = vector_search_chunks(query_text, top_k=20, min_score=0.6)
+    records = vector_search_chunks(query_text, top_k=50, min_score=0.6)
 
     if not records:
         return "❌ Maaf, saya tidak menemukan potongan yang relevan untuk menjawab pertanyaan ini."
 
-    # Deteksi permintaan user (tafsir / terjemahan / teks asli)
+    # Deteksi jenis sumber
     preferred_source = None
     lowered = query_text.lower()
     if "tafsir" in lowered:
@@ -105,21 +105,35 @@ def process_query(query_text):
     elif "teks" in lowered or "bacaan" in lowered or "arab" in lowered:
         preferred_source = "text"
 
-    # Deteksi spesifik ayat
+    # Deteksi permintaan surah + ayat
     surah, ayat = extract_surah_ayah_from_query(query_text)
-    if surah and ayat:
-        records = [r for r in records if r["surah"].lower() == surah.lower() and r["ayat_number"] == ayat]
-        print(f"🔍 Filter: Hanya ambil chunk dari Surah '{surah}' Ayat {ayat}.")
 
-    # Jika user menyebut sumber tertentu (tafsir, translation, text), prioritaskan
-    if preferred_source:
+    # 🧠 Hard Filter Kombinasi Tertarget
+    if surah and ayat and preferred_source:
+        hard_filtered = [
+            r for r in records
+            if r["surah"].lower() == surah.lower()
+            and r["ayat_number"] == ayat
+            and r["source"] == preferred_source
+        ]
+        if hard_filtered:
+            print(f"🎯 Ambil langsung: {preferred_source} dari {surah} ayat {ayat}")
+            records = hard_filtered
+        else:
+            print("⚠️ Tafsir spesifik tidak ditemukan, fallback ke hasil umum.")
+
+    elif surah and ayat:
+        records = [r for r in records if r["surah"].lower() == surah.lower() and r["ayat_number"] == ayat]
+        print(f"🔍 Filter: Surah '{surah}', Ayat {ayat}")
+
+    elif preferred_source:
         preferred = [r for r in records if r["source"] == preferred_source]
         if preferred:
             print(f"🎯 Mengutamakan sumber: {preferred_source}")
             records = preferred
 
     if not records:
-        return "❌ Maaf, tidak ada potongan relevan dari sumber yang diminta."
+        return "❌ Maaf, tidak ada potongan relevan dari sumber atau ayat yang diminta."
 
     context = build_chunk_context(records)
     prompt = f"""
@@ -134,6 +148,7 @@ Berikan penjelasan tafsir berdasarkan potongan konten berikut:
 Jika potongan konten tidak relevan dengan pertanyaan, mohon jawab bahwa Anda tidak dapat menjawab.
 """
     return call_groq_api(prompt, GROQ_API_KEY, GROQ_MODEL)
+
 
 
 
