@@ -3,12 +3,11 @@
 import json
 import traceback
 import requests
-import re
+import os
 from config import driver, INDEX_NAME, GROQ_API_KEY, GROQ_MODEL
 from groq_embedder import Embedder
 
-
-def vector_search_chunks(query_text, top_k=20, min_score=0.6):
+def vector_search_chunks(query_text, top_k=5, min_score=0.6):
     try:
         vector = Embedder.embed_text(query_text)
 
@@ -27,7 +26,16 @@ def vector_search_chunks(query_text, top_k=20, min_score=0.6):
         )
 
         records = result.records if result.records else []
+
+        # Filter by score threshold
         filtered = [r for r in records if r["score"] >= min_score]
+
+        if not filtered:
+            print("⚠️ Tidak ada chunk yang melewati ambang skor minimal.")
+        else:
+            print("📦 Chunk relevan ditemukan:")
+            for r in filtered:
+                print(f"- ({r['surah']}:{r['ayat_number']}) [{r['source']}] | score={r['score']:.4f}")
 
         return filtered
 
@@ -36,26 +44,15 @@ def vector_search_chunks(query_text, top_k=20, min_score=0.6):
         return []
 
 
-def extract_surah_ayah_from_query(query_text):
-    """Coba ekstrak surah dan ayat dari pertanyaan seperti: 'apa arti surat Al-Lahab ayat 2'."""
-    match = re.search(r'surat\s+([a-zA-Z\-]+)\s+ayat\s+(\d+)', query_text.lower())
-    if match:
-        surah = match.group(1).replace('-', ' ').title()
-        ayat = int(match.group(2))
-        return surah, ayat
-    return None, None
-
-
 def build_chunk_context(records):
     context = ""
     for r in records:
         context += f"""
 📖 Surah: {r.get('surah')}
 Ayat {r.get('ayat_number')} | Sumber: {r.get('source')}
-➷ "{r.get('chunk_text')}"
+➷ \"{r.get('chunk_text')}\"
 """
     return context
-
 
 def call_groq_api(prompt, api_key, model):
     try:
@@ -72,21 +69,14 @@ def call_groq_api(prompt, api_key, model):
         )
         response.raise_for_status()
         return response.json()["choices"][0]["message"]["content"]
-
+        
     except Exception as e:
         print(f"❌ Groq API error: {str(e)}")
         return "⚠️ Gagal mendapatkan respons dari AI."
 
-
 def process_query(query_text):
     print(f"\n💬 Query: '{query_text}'")
     records = vector_search_chunks(query_text, top_k=20, min_score=0.6)
-
-    # Coba deteksi permintaan spesifik surah dan ayat
-    surah, ayat = extract_surah_ayah_from_query(query_text)
-    if surah and ayat:
-        records = [r for r in records if r["surah"].lower() == surah.lower() and r["ayat_number"] == ayat]
-        print(f"🔍 Filter: Hanya ambil chunk dari Surah '{surah}' Ayat {ayat}.")
 
     if not records:
         return "❌ Maaf, saya tidak menemukan potongan yang relevan untuk menjawab pertanyaan ini."
@@ -103,6 +93,7 @@ Berikan penjelasan tafsir berdasarkan potongan konten berikut:
 
 Jika potongan konten tidak relevan dengan pertanyaan, mohon jawab bahwa Anda tidak dapat menjawab.
 """
+
     return call_groq_api(prompt, GROQ_API_KEY, GROQ_MODEL)
 
 
@@ -116,7 +107,6 @@ def main():
             answer = process_query(query)
             print("\n🧐 Jawaban:")
             print(answer)
-
 
 if __name__ == "__main__":
     main()
