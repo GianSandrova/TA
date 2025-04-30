@@ -5,20 +5,26 @@ import torch
 
 class SentenceTransformerEmbedder(BaseEmbedder):
     def __init__(self, model_name="Alibaba-NLP/gte-Qwen2-7B-instruct"):
-        # Memory optimization settings
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        
-        # Load the model with 8-bit quantization
-        model_kwargs = {
-            'device_map': 'auto',  # Automatically manage device placement
-            'torch_dtype': torch.float16,  # Use half precision
-            'load_in_8bit': True,  # Use 8-bit quantization instead of 4-bit
-        }
-        
-        self.model = SentenceTransformer(model_name, **model_kwargs)
+
+        # Load tokenizer and model manually with quantization
+        from transformers import AutoTokenizer, AutoModel
+        from transformers import BitsAndBytesConfig
+
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        quantization_config = BitsAndBytesConfig(load_in_8bit=True)
+
+        model = AutoModel.from_pretrained(
+            model_name,
+            device_map="auto",
+            torch_dtype=torch.float16,
+            quantization_config=quantization_config
+        )
+
+        self.model = SentenceTransformer(modules=[tokenizer, model])
         self.max_tokens = 8192
         self.chunk_overlap = 128
-        # Clear CUDA cache after model loading
+
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
@@ -29,5 +35,3 @@ class SentenceTransformerEmbedder(BaseEmbedder):
 
     def embed_query(self, query: str):
         return self.embed_text(query)
-
-Embedder = SentenceTransformerEmbedder()
