@@ -8,11 +8,21 @@ from config import driver, DIMENSION
 from groq_embedder import Embedder
 from utils import chunk_text
 
+
 def embed_chunk(text):
     vector = Embedder.embed_text(text)
     if not isinstance(vector, list) or len(vector) != DIMENSION:
         raise ValueError("❌ Invalid embedding vector")
     return vector
+
+
+def extract_ayah_number(ayah_key: str) -> int:
+    """Ekstrak angka dari key seperti 'Ayat 1'."""
+    try:
+        return int(''.join(filter(str.isdigit, ayah_key)))
+    except Exception:
+        raise ValueError(f"❌ Gagal parsing ayat: {ayah_key}")
+
 
 def insert_quran_chunks():
     with open("quran.json", "r", encoding="utf-8") as file:
@@ -52,9 +62,15 @@ def insert_quran_chunks():
                     }
                 )
 
-                for ayah_num, ayah_text in surah["text"].items():
-                    translation = surah.get("translations", {}).get("id", {}).get("text", {}).get(ayah_num, "")
-                    tafsir = surah.get("tafsir", {}).get("id", {}).get("kemenag", {}).get("text", {}).get(ayah_num, "")
+                for ayah_key, ayah_text in surah["text"].items():
+                    try:
+                        ayah_num = extract_ayah_number(ayah_key)
+                    except ValueError as e:
+                        print(str(e))
+                        continue
+
+                    translation = surah.get("translations", {}).get("id", {}).get("text", {}).get(ayah_key, "")
+                    tafsir = surah.get("tafsir", {}).get("id", {}).get("kemenag", {}).get("text", {}).get(ayah_key, "")
 
                     # Simpan Ayat node
                     session.run(
@@ -70,14 +86,14 @@ def insert_quran_chunks():
                         """,
                         {
                             "surah_number": surah_id,
-                            "number": int(ayah_num),
+                            "number": ayah_num,
                             "text": ayah_text,
                             "translation": translation,
                             "tafsir": tafsir
                         }
                     )
 
-                    # Buat chunk node dari setiap bagian (text, translation, tafsir)
+                    # Buat chunk dari setiap bagian (text, translation, tafsir)
                     for source, content in {
                         "text": ayah_text,
                         "translation": translation,
@@ -105,7 +121,7 @@ def insert_quran_chunks():
                                         "chunk_text": chunk,
                                         "embedding": embedding,
                                         "source": source,
-                                        "ayat_number": int(ayah_num),
+                                        "ayat_number": ayah_num,
                                         "surah_name": surah_name_latin,
                                         "surah_number": surah_id
                                     }
@@ -120,6 +136,7 @@ def insert_quran_chunks():
         print(f"❌ Error saat insert: {str(e)}")
     finally:
         driver.close()
+
 
 if __name__ == "__main__":
     insert_quran_chunks()
