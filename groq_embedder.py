@@ -4,7 +4,7 @@ from sentence_transformers import SentenceTransformer
 import torch
 
 class SentenceTransformerEmbedder(BaseEmbedder):
-    def __init__(self, model_name="Alibaba-NLP/gte-Qwen2-7B-instruct"):
+    def __init__(self, model_name="gte-qwen2-7b-instruct"):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Load tokenizer and model manually with quantization
@@ -35,3 +35,5 @@ class SentenceTransformerEmbedder(BaseEmbedder):
 
     def embed_query(self, query: str):
         return self.embed_text(query)
+
+Embedder = SentenceTransformerEmbedder()
