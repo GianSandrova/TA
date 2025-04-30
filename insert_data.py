@@ -30,6 +30,7 @@ def insert_quran_chunks():
 
     try:
         with driver.session() as session:
+            # Hapus semua data sebelumnya
             session.run("MATCH (n) DETACH DELETE n")
             session.run("CREATE (:Quran {name: 'Al-Quran'})")
 
@@ -42,7 +43,7 @@ def insert_quran_chunks():
                 surah_name_latin = surah["name_latin"]
                 number_of_ayah = int(surah["number_of_ayah"])
 
-                # Simpan Surah node
+                # Simpan node Surah
                 session.run(
                     """
                     MATCH (q:Quran {name: 'Al-Quran'})
@@ -72,7 +73,7 @@ def insert_quran_chunks():
                     translation = surah.get("translations", {}).get("id", {}).get("text", {}).get(ayah_key, "")
                     tafsir = surah.get("tafsir", {}).get("id", {}).get("kemenag", {}).get("text", {}).get(ayah_key, "")
 
-                    # Simpan Ayat node
+                    # Simpan node Ayat
                     session.run(
                         """
                         MATCH (s:Surah {number: $surah_number})
@@ -93,7 +94,7 @@ def insert_quran_chunks():
                         }
                     )
 
-                    # Buat chunk dari setiap bagian (text, translation, tafsir)
+                    # Proses setiap sumber (teks asli, terjemahan, tafsir)
                     for source, content in {
                         "text": ayah_text,
                         "translation": translation,
@@ -102,7 +103,9 @@ def insert_quran_chunks():
                         if content.strip():
                             chunks = chunk_text(content)
                             for chunk in chunks:
-                                embedding = embed_chunk(chunk)
+                                # Tambahkan konteks surah dan ayat ke isi chunk
+                                prefixed_chunk = f"[{surah_name_latin}:{ayah_num}] {chunk}"
+                                embedding = embed_chunk(prefixed_chunk)
                                 session.run(
                                     """
                                     MATCH (s:Surah {number: $surah_number})-[:HAS_AYAT]->(a:Ayat {number: $ayat_number})
@@ -112,13 +115,14 @@ def insert_quran_chunks():
                                         embedding: $embedding,
                                         source: $source,
                                         ayat_number: $ayat_number,
-                                        surah_name: $surah_name
+                                        surah_name: $surah_name,
+                                        surah_number: $surah_number
                                     })
                                     CREATE (a)-[:HAS_CHUNK]->(c)
                                     """,
                                     {
                                         "id": str(uuid4()),
-                                        "chunk_text": chunk,
+                                        "chunk_text": prefixed_chunk,
                                         "embedding": embedding,
                                         "source": source,
                                         "ayat_number": ayah_num,
