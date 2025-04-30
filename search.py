@@ -3,7 +3,6 @@
 import json
 import traceback
 import requests
-import re
 import os
 from config import driver, INDEX_NAME, GROQ_API_KEY, GROQ_MODEL
 from groq_embedder import Embedder
@@ -75,87 +74,12 @@ def call_groq_api(prompt, api_key, model):
         print(f"❌ Groq API error: {str(e)}")
         return "⚠️ Gagal mendapatkan respons dari AI."
 
-
-def extract_surah_ayah_from_query(query_text):
-    """
-    Ekstrak nama surah dan nomor ayat dari query pengguna.
-    Contoh yang dikenali: 'surat al-lahab ayat 2'
-    """
-    match = re.search(r'surat\s+([a-zA-Z\-]+)\s+ayat\s+(\d+)', query_text.lower())
-    if match:
-        surah = match.group(1).replace('-', ' ').title()
-        ayat = int(match.group(2))
-        return surah, ayat
-    return None, None
-
 def process_query(query_text):
     print(f"\n💬 Query: '{query_text}'")
-    all_records = vector_search_chunks(query_text, top_k=50, min_score=0.6)
-
-    if not all_records:
-        return "❌ Maaf, saya tidak menemukan potongan yang relevan untuk menjawab pertanyaan ini."
-
-    # Deteksi jenis sumber
-    preferred_source = None
-    lowered = query_text.lower()
-    if "tafsir" in lowered:
-        preferred_source = "tafsir"
-    elif "terjemahan" in lowered or "arti" in lowered:
-        preferred_source = "translation"
-    elif "teks" in lowered or "bacaan" in lowered or "arab" in lowered:
-        preferred_source = "text"
-
-    # Deteksi permintaan surah + ayat
-    surah, ayat = extract_surah_ayah_from_query(query_text)
-
-    # 🎯 HARD FILTER: Cari chunk spesifik [surah, ayat, source]
-    if surah and ayat and preferred_source:
-        hard_filtered = [
-            r for r in all_records
-            if r["surah"].lower() == surah.lower()
-            and r["ayat_number"] == ayat
-            and r["source"] == preferred_source
-        ]
-        if hard_filtered:
-            print(f"🎯 Langsung ambil [{preferred_source}] dari Surah '{surah}' Ayat {ayat}")
-            records = hard_filtered
-        else:
-            print("⚠️ Tidak ditemukan tafsir spesifik. Coba cari translation sebagai fallback.")
-            # Coba fallback ke source translation dari ayat yang sama
-            fallback = [
-                r for r in all_records
-                if r["surah"].lower() == surah.lower()
-                and r["ayat_number"] == ayat
-                and r["source"] == "translation"
-            ]
-            if fallback:
-                print("🔁 Fallback: translation ditemukan.")
-                records = fallback
-            else:
-                print("🔁 Tidak ada chunk dari ayat tersebut. Gunakan vector search penuh.")
-                records = all_records
-    else:
-        # Jika hanya surah + ayat saja
-        if surah and ayat:
-            records = [
-                r for r in all_records
-                if r["surah"].lower() == surah.lower()
-                and r["ayat_number"] == ayat
-            ]
-            print(f"🔍 Filter: Surah '{surah}' Ayat {ayat}")
-        # Jika hanya sebut source
-        elif preferred_source:
-            preferred = [r for r in all_records if r["source"] == preferred_source]
-            if preferred:
-                print(f"🎯 Prioritaskan source: {preferred_source}")
-                records = preferred
-            else:
-                records = all_records
-        else:
-            records = all_records
+    records = vector_search_chunks(query_text, top_k=20, min_score=0.6)
 
     if not records:
-        return "❌ Tidak ada chunk yang relevan dari sumber atau ayat yang diminta."
+        return "❌ Maaf, saya tidak menemukan potongan yang relevan untuk menjawab pertanyaan ini."
 
     context = build_chunk_context(records)
     prompt = f"""
@@ -169,9 +93,8 @@ Berikan penjelasan tafsir berdasarkan potongan konten berikut:
 
 Jika potongan konten tidak relevan dengan pertanyaan, mohon jawab bahwa Anda tidak dapat menjawab.
 """
+
     return call_groq_api(prompt, GROQ_API_KEY, GROQ_MODEL)
-
-
 
 
 def main():
