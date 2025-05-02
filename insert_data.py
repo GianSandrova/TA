@@ -65,9 +65,9 @@ def insert_quran_chunks():
 
                 for ayah_key, ayah_text in surah["text"].items():
                     try:
-                        ayah_num = extract_ayah_number(ayah_key)
-                    except ValueError as e:
-                        print(str(e))
+                        ayah_num = int(ayah_key)
+                    except ValueError:
+                        print(f"❌ Gagal parsing ayat: {ayah_key}")
                         continue
 
                     translation = surah.get("translations", {}).get("id", {}).get("text", {}).get(ayah_key, "")
