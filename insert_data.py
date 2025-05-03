@@ -33,7 +33,7 @@ def insert_quran_chunks():
             session.run("MERGE (:Quran {name: 'Al-Quran'})")
 
             # Hanya proses mulai dari Surah As-Saffat (no 37)
-            filtered_data = [s for s in quran_data if int(s["number"]) >= 40]
+            filtered_data = [s for s in quran_data if int(s["number"]) >= 52]
             total_ayat = sum(len(surah["text"]) for surah in filtered_data)
             progress = tqdm(total=total_ayat, desc="Memproses Ayat")
 
