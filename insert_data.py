@@ -17,7 +17,6 @@ def embed_chunk(text):
 
 
 def extract_ayah_number(ayah_key: str) -> int:
-    """Ekstrak angka dari key seperti 'Ayat 1'."""
     try:
         return int(''.join(filter(str.isdigit, ayah_key)))
     except Exception:
@@ -30,30 +29,29 @@ def insert_quran_chunks():
 
     try:
         with driver.session() as session:
-            # Hapus semua data sebelumnya
-            session.run("MATCH (n) DETACH DELETE n")
-            session.run("CREATE (:Quran {name: 'Al-Quran'})")
+            # Jangan hapus data sebelumnya
+            session.run("MERGE (:Quran {name: 'Al-Quran'})")
 
-            total_ayat = sum(len(surah["text"]) for surah in quran_data)
+            # Hanya proses mulai dari Surah As-Saffat (no 37)
+            filtered_data = [s for s in quran_data if int(s["number"]) >= 37]
+            total_ayat = sum(len(surah["text"]) for surah in filtered_data)
             progress = tqdm(total=total_ayat, desc="Memproses Ayat")
 
-            for surah in quran_data:
+            for surah in filtered_data:
                 surah_id = int(surah["number"])
                 surah_name = surah["name"]
                 surah_name_latin = surah["name_latin"]
                 number_of_ayah = int(surah["number_of_ayah"])
 
-                # Simpan node Surah
+                # Buat atau gunakan node Surah
                 session.run(
                     """
                     MATCH (q:Quran {name: 'Al-Quran'})
-                    CREATE (s:Surah {
-                        number: $number,
-                        name: $name,
-                        name_latin: $name_latin,
-                        number_of_ayah: $number_of_ayah
-                    })
-                    CREATE (q)-[:HAS_SURAH]->(s)
+                    MERGE (s:Surah {number: $number})
+                    SET s.name = $name,
+                        s.name_latin = $name_latin,
+                        s.number_of_ayah = $number_of_ayah
+                    MERGE (q)-[:HAS_SURAH]->(s)
                     """,
                     {
                         "number": surah_id,
@@ -73,17 +71,15 @@ def insert_quran_chunks():
                     translation = surah.get("translations", {}).get("id", {}).get("text", {}).get(ayah_key, "")
                     tafsir = surah.get("tafsir", {}).get("id", {}).get("kemenag", {}).get("text", {}).get(ayah_key, "")
 
-                    # Simpan node Ayat
+                    # Simpan node Ayat jika belum ada
                     session.run(
                         """
                         MATCH (s:Surah {number: $surah_number})
-                        CREATE (a:Ayat {
-                            number: $number,
-                            text: $text,
-                            translation: $translation,
-                            tafsir: $tafsir
-                        })
-                        CREATE (s)-[:HAS_AYAT]->(a)
+                        MERGE (a:Ayat {number: $number, surah_number: $surah_number})
+                        SET a.text = $text,
+                            a.translation = $translation,
+                            a.tafsir = $tafsir
+                        MERGE (s)-[:HAS_AYAT]->(a)
                         """,
                         {
                             "surah_number": surah_id,
@@ -94,7 +90,7 @@ def insert_quran_chunks():
                         }
                     )
 
-                    # Proses setiap sumber (teks asli, terjemahan, tafsir)
+                    # Proses setiap sumber konten
                     for source, content in {
                         "text": ayah_text,
                         "translation": translation,
@@ -107,7 +103,7 @@ def insert_quran_chunks():
                                 embedding = embed_chunk(prefixed_chunk)
                                 session.run(
                                     """
-                                    MATCH (s:Surah {number: $surah_number})-[:HAS_AYAT]->(a:Ayat {number: $ayat_number})
+                                    MATCH (a:Ayat {number: $ayat_number, surah_number: $surah_number})
                                     CREATE (c:Chunk {
                                         id: $id,
                                         text: $chunk_text,
@@ -130,11 +126,10 @@ def insert_quran_chunks():
                                     }
                                 )
 
-
                     progress.update(1)
 
             progress.close()
-            print("\n✅ Semua data Al-Quran dan chunk embedding berhasil dimasukkan ke Neo4j.")
+            print("\n✅ Surah As-Saffat dan setelahnya berhasil dimasukkan ke Neo4j.")
 
     except Exception as e:
         print(f"❌ Error saat insert: {str(e)}")
