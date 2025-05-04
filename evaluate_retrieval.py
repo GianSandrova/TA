@@ -6,15 +6,19 @@ from search import vector_search_chunks
 TOP_K = 5
 GROUND_TRUTH_PATH = "ground_truth.json"
 
-def normalize_key(surah, ayat):
-    return f"{surah}:{ayat}".replace(" ", "").lower()
+def clean_key(surah, ayat):
+    # Normalisasi: huruf kecil, hilangkan spasi dan label tambahan seperti [tafsir]
+    return f"{surah}:{ayat}".split()[0].replace("’", "'").replace(" ", "").lower()
 
 def evaluate_query(query_text, relevant_set):
     retrieved = vector_search_chunks(query_text, top_k=TOP_K)
     retrieved_keys = [
-        normalize_key(r['surah'], r['ayat_number']) for r in retrieved
+        clean_key(r['surah'], r['ayat_number']) for r in retrieved
     ]
-    relevant_keys = set([k.lower() for k in relevant_set])
+    relevant_keys = set([k.replace("’", "'").replace(" ", "").lower() for k in relevant_set])
+
+    print("🔍 Retrieved keys:", retrieved_keys)
+    print("🎯 Relevant keys:", relevant_keys)
 
     # Precision@k
     relevant_retrieved = [rk for rk in retrieved_keys if rk in relevant_keys]
@@ -40,7 +44,7 @@ def main():
     n = len(ground_truth)
 
     print("📊 Evaluasi Retrieval:")
-    print("-" * 50)
+    print("-" * 60)
 
     for query, relevant in ground_truth.items():
         print(f"\n💬 Query: {query}")
@@ -54,7 +58,7 @@ def main():
         total_mrr += mrr
 
     print("\n📈 Rata-rata Evaluasi:")
-    print("-" * 50)
+    print("-" * 60)
     print(f"📌 Mean Precision@{TOP_K}: {total_p / n:.4f}")
     print(f"📌 Mean Recall@{TOP_K}: {total_r / n:.4f}")
     print(f"📌 Mean MRR: {total_mrr / n:.4f}")
