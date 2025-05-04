@@ -1,72 +1,77 @@
 {
   "Apa isi dari Al-Fatihah ayat 6?": [
-    "al-fatihah:2",
-    "al-fatihah:5",
-    "al-fatihah:6",
-    "al-fatihah:7"
+    "al-fatihah:6"
   ],
   "Apa tafsir Al-Fatihah ayat 7 menurut Kemenag?": [
-    "al-fath:23",
-    "al-fatihah:5",
-    "al-fatihah:6",
     "al-fatihah:7"
   ],
   "Apa makna 'jalan yang lurus' dalam Al-Fatihah?": [
     "al-fatihah:6",
-    "al-fatihah:7",
-    "al-hijr:41"
+    "al-fatihah:7"
   ],
-  "Jelaskan tafsir ayat kursi!": [
-    "al-baqarah:255",
-    "al-baqarah:270",
-    "as-sajdah:1",
-    "as-sajdah:2",
-    "asy-syura:1",
-    "asy-syura:2"
+  "Apa maksud 'jalan yang lurus' pada Al-Fatihah ayat 6?": [
+    "al-fatihah:6"
+  ],
+  "Apa maksud 'jalan yang lurus' pada Al-Fatihah ayat 7?": [
+    "al-fatihah:7"
+  ],
+  "Jelaskan tafsir Ayat Kursi!": [
+    "al-baqarah:255"
   ],
   "Apa isi perintah Allah tentang salat tepat waktu?": [
     "al-'ankabut:45",
-    "al-mu'minun:10",
     "al-mu'minun:9",
-    "an-nisa':103",
-    "an-nisa:103",
-    "hud:114"
+    "an-nisa':103"
   ],
   "Apa larangan Al-Qur’an terhadap ghibah?": [
-    "al-a'raf:33",
-    "al-hujurat:12",
-    "al-isra':36",
-    "an-nahl:116",
-    "an-nisa':114",
-    "an-nur:19"
-  ], "Apa perintah Allah kepada manusia terhadap orang tua dalam Al-Isra’?": [
-    "al-'ankabut:8",
-    "al-ankabut:8",
-    "al-baqarah:83",
-    "al-isra':23",
-    "al-isra:23"
+    "al-hujurat:12"
+  ],
+  "Apa perintah Allah kepada manusia terhadap orang tua dalam Al-Isra’?": [
+    "al-isra':23"
   ],
   "Kenapa manusia diciptakan bersuku-suku menurut Al-Qur’an?": [
-    "'abasa:19",
-    "al-an'am:98",
-    "al-hujurat:13",
-    "al-waqi'ah:57",
-    "ali'imran:6",
-    "hud:118"
-  ],  "Apa isi dari Al-Baqarah ayat 155 dan 156 terkait musibah?": [
+    "al-hujurat:13"
+  ],
+  "Apa isi dari Al-Baqarah ayat 155 dan 156 terkait musibah?": [
     "al-baqarah:155",
-    "al-baqarah:156",
-    "al-baqarah:210",
-    "al-baqarah:211",
-    "al-baqarah:214"
+    "al-baqarah:156"
   ],
   "Apa penjelasan tentang umat terbaik dalam Ali 'Imran ayat 110?": [
-    "ali'imran:104",
-    "ali'imran:110",
-    "ali'imran:113",
-    "ali'imran:115",
-    "ali'imran:33",
-    "ali'imran:37",
-    "ali'imran:68"
-  ]
-}
+    "ali'imran:110"
+  ],
+    "Apa makna 'ghairil maghdubi 'alaihim' dalam Al-Fatihah ayat 7?": [
+      "al-fatihah:7"
+    ],
+    "Apa makna 'wala d-dallin' dalam Al-Fatihah ayat 7?": [
+      "al-fatihah:7"
+    ],
+    "Apa makna 'Allah tidak mengantuk dan tidak tidur' dalam Ayat Kursi?": [
+      "al-baqarah:255"
+    ],
+    "Apa makna 'Kursi Allah meliputi langit dan bumi' dalam Ayat Kursi?": [
+      "al-baqarah:255"
+    ],
+    "Apa maksud 'salat mencegah perbuatan keji dan mungkar' dalam Al-Ankabut ayat 45?": [
+      "al-'ankabut:45"
+    ],
+    "Apa perintah Allah tentang menjaga waktu salat dalam An-Nisa' ayat 103?": [
+      "an-nisa':103"
+    ],
+    "Apa larangan berprasangka buruk dalam Al-Hujurat ayat 12?": [
+      "al-hujurat:12"
+    ],
+    "Apa perintah berbuat baik kepada orang tua dalam Al-Isra' ayat 23?": [
+      "al-isra':23"
+    ],
+    "Apa alasan manusia diciptakan bersuku-suku dalam Al-Hujurat ayat 13?": [
+      "al-hujurat:13"
+    ],
+    "Apa hikmah di balik musibah menurut Al-Baqarah ayat 155 dan 156?": [
+      "al-baqarah:155",
+      "al-baqarah:156"
+    ],
+    "Apa ciri-ciri umat terbaik dalam Ali 'Imran ayat 110?": [
+      "ali'imran:110"
+    ]
+  }
+  
