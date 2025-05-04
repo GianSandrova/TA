@@ -1,5 +1,3 @@
-# evaluate_retrieval.py
-
 import json
 from search import vector_search_chunks
 
@@ -7,15 +5,21 @@ TOP_K = 5
 GROUND_TRUTH_PATH = "ground_truth.json"
 
 def clean_key(surah, ayat):
-    # Normalisasi: huruf kecil, hilangkan spasi dan label tambahan seperti [tafsir]
-    return f"{surah}:{ayat}".split()[0].replace("’", "'").replace(" ", "").lower()
+    # Normalisasi surah dan ayat (hilangkan spasi, ubah kutipan, lowercase)
+    surah = str(surah).replace("’", "'").replace("‘", "'").replace(" ", "").lower()
+    ayat = str(ayat).strip()
+    return f"{surah}:{ayat}"
 
 def evaluate_query(query_text, relevant_set):
     retrieved = vector_search_chunks(query_text, top_k=TOP_K)
+    
+    # Normalisasi hasil retrieval
     retrieved_keys = [
         clean_key(r['surah'], r['ayat_number']) for r in retrieved
     ]
-    relevant_keys = set([k.replace("’", "'").replace(" ", "").lower() for k in relevant_set])
+    
+    # Normalisasi ground truth
+    relevant_keys = set(k.replace("’", "'").replace("‘", "'").replace(" ", "").lower() for k in relevant_set)
 
     print("🔍 Retrieved keys:", retrieved_keys)
     print("🎯 Relevant keys:", relevant_keys)
@@ -33,6 +37,14 @@ def evaluate_query(query_text, relevant_set):
         if rk in relevant_keys:
             mrr = 1 / i
             break
+
+    # Optional error analysis
+    for rk in retrieved_keys:
+        if rk not in relevant_keys:
+            print(f"⚠️  False Positive: {rk}")
+    for gk in relevant_keys:
+        if gk not in retrieved_keys:
+            print(f"❌ Missed Relevant: {gk}")
 
     return precision, recall, mrr
 
