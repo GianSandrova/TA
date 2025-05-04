@@ -1,41 +1,72 @@
 {
   "Apa isi dari Al-Fatihah ayat 6?": [
-    "al-fatihah:6"
+    "al-fatihah:2",
+    "al-fatihah:5",
+    "al-fatihah:6",
+    "al-fatihah:7"
   ],
   "Apa tafsir Al-Fatihah ayat 7 menurut Kemenag?": [
+    "al-fath:23",
+    "al-fatihah:5",
+    "al-fatihah:6",
     "al-fatihah:7"
   ],
   "Apa makna 'jalan yang lurus' dalam Al-Fatihah?": [
     "al-fatihah:6",
-    "al-fatihah:7"
+    "al-fatihah:7",
+    "al-hijr:41"
   ],
   "Jelaskan tafsir ayat kursi!": [
-    "al-baqarah:255"
+    "al-baqarah:255",
+    "al-baqarah:270",
+    "as-sajdah:1",
+    "as-sajdah:2",
+    "asy-syura:1",
+    "asy-syura:2"
   ],
   "Apa isi perintah Allah tentang salat tepat waktu?": [
-    "an-nisa:103",
-    "hud:114",
+    "al-'ankabut:45",
+    "al-mu'minun:10",
     "al-mu'minun:9",
-    "al-mu'minun:10"
+    "an-nisa':103",
+    "an-nisa:103",
+    "hud:114"
   ],
   "Apa larangan Al-Qur’an terhadap ghibah?": [
-    "al-hujurat:12"
-  ],
-  "Apa perintah Allah kepada manusia terhadap orang tua dalam Al-Isra’?": [
-    "al-isra:23",
+    "al-a'raf:33",
+    "al-hujurat:12",
+    "al-isra':36",
+    "an-nahl:116",
+    "an-nisa':114",
+    "an-nur:19"
+  ], "Apa perintah Allah kepada manusia terhadap orang tua dalam Al-Isra’?": [
+    "al-'ankabut:8",
+    "al-ankabut:8",
     "al-baqarah:83",
-    "al-ankabut:8"
+    "al-isra':23",
+    "al-isra:23"
   ],
   "Kenapa manusia diciptakan bersuku-suku menurut Al-Qur’an?": [
-    "al-hujurat:13"
-  ],
-  "Apa isi dari Al-Baqarah ayat 155 dan 156 terkait musibah?": [
+    "'abasa:19",
+    "al-an'am:98",
+    "al-hujurat:13",
+    "al-waqi'ah:57",
+    "ali'imran:6",
+    "hud:118"
+  ],  "Apa isi dari Al-Baqarah ayat 155 dan 156 terkait musibah?": [
     "al-baqarah:155",
-    "al-baqarah:156"
+    "al-baqarah:156",
+    "al-baqarah:210",
+    "al-baqarah:211",
+    "al-baqarah:214"
   ],
   "Apa penjelasan tentang umat terbaik dalam Ali 'Imran ayat 110?": [
-    "ali'imran:110",
     "ali'imran:104",
-    "ali'imran:113"
+    "ali'imran:110",
+    "ali'imran:113",
+    "ali'imran:115",
+    "ali'imran:33",
+    "ali'imran:37",
+    "ali'imran:68"
   ]
 }
