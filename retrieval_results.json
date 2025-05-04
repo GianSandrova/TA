@@ -1,0 +1,11 @@
+[
+    {
+      "query": "Apa isi dari Al-Fatihah ayat 6?",
+      "retrieved_keys": ["al-fatihah:6", "al-fatihah:2", "al-fatihah:7"]
+    },
+    {
+      "query": "Apa tafsir Al-Fatihah ayat 7 menurut Kemenag?",
+      "retrieved_keys": ["al-fatihah:7", "al-fatihah:6", "al-fath:23"]
+    }
+  ]
+  
