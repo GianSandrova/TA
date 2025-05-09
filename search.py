@@ -76,7 +76,7 @@ def call_groq_api(prompt, api_key, model):
 
 def process_query(query_text):
     print(f"\n💬 Query: '{query_text}'")
-    records = vector_search_chunks(query_text, top_k=20, min_score=0.6)
+    records = vector_search_chunks(query_text, top_k=10, min_score=0.6)
 
     if not records:
         return "❌ Maaf, saya tidak menemukan potongan yang relevan untuk menjawab pertanyaan ini."
